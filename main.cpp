@@ -62,7 +62,6 @@ enum Results
 #define COMMAND_TIME   L"--time"
 #define COMMAND_TEXT01       L"--text01"
 #define COMMAND_TEXT02       L"--text02"
-#define COMMAND_TEXT03       L"--text03"
 #define COMMAND_HELP       L"--help"
 #define COMMAND_IMAGE_PATH      L"--image-path"
 #define COMMAND_ONLY_CREATE_SHORTCUT   L"--ocs"
@@ -84,12 +83,11 @@ void print_help() {
 	wcout << "\t" << COMMAND_TIME << " ：设置显示时间(仅在0≤时间≤7000时有效)" << endl;
 	wcout << "\t" << COMMAND_TEXT01 << " ：设置通知的第一行文本" << endl;
 	wcout << "\t" << COMMAND_TEXT02 << " ：设置通知的第二行文本" << endl;
-	wcout << "\t" << COMMAND_TEXT03 << " ：设置通知的第三行文本" << endl;
 	wcout << "\t" << COMMAND_HELP << " ：打印帮助说明" << endl;
 	wcout << "\t" << COMMAND_IMAGE_PATH << " ：设置图像路径" << endl;
 	//wcout << "\t" << COMMAND_ONLY_CREATE_SHORTCUT << " ：仅创建应用的快捷方式" << endl;
 	wcout << "\t" << COMMAND_AUDIO_STATE << " ：设置通知音频的播放模式：单次 = 0，无 = 1，多次循环 = 2" << endl;
-	wcout << "\t" << COMMAND_ATTRIBUTE << " ：设置通知的注释" << endl;
+	wcout << "\t" << COMMAND_ATTRIBUTE << " ：设置通知的注释（也可当作第三行使用[Doge]）" << endl;
 	wcout << endl;
 	wcout << "注意事项：" << endl;
 	wcout << "\t" << "被“*”标记的选项为必要项，如果缺失，程序可能无法正确运行导致通知启推异常。" << endl;
@@ -104,7 +102,6 @@ int wmain(int argc, LPWSTR* argv) {
 	wstring appUserModelID = L"";
 	wstring text01 = L"";
 	wstring text02 = L"";
-	wstring text03 = L"";
 	wstring imagePath = L"";
 	wstring attribute = L"";
 	vector<wstring> actions;
@@ -134,9 +131,6 @@ int wmain(int argc, LPWSTR* argv) {
 		else if (!wcscmp(COMMAND_TEXT02, argv[i])) {
 			text02 = argv[++i];
 		}
-		else if (!wcscmp(COMMAND_TEXT03, argv[i])) {
-			text03 = argv[++i];
-		}
 		else if (!wcscmp(COMMAND_ATTRIBUTE, argv[i])) {
 			attribute = argv[++i];
 		}
@@ -158,7 +152,7 @@ int wmain(int argc, LPWSTR* argv) {
 	WinToast::instance()->setAppName(appName);
 	WinToast::instance()->setAppUserModelId(appUserModelID);
 	if (onlyCreateShortcut) {
-		if (!imagePath.empty() || !text01.empty() || !text02.empty() || !text03.empty() || actions.size() > 0 || expiration) {
+		if (!imagePath.empty() || !text01.empty() || !text02.empty() || actions.size() > 0 || expiration) {
 			cerr << "--only-create-shortcut 选项不接受图片/文本/动作参数或过期的参数" << endl;
 			return 9;
 		}
@@ -172,7 +166,6 @@ int wmain(int argc, LPWSTR* argv) {
 	WinToastTemplate templ(!imagePath.empty() ? WinToastTemplate::ImageAndText02 : WinToastTemplate::Text02);
 	templ.setTextField(text01, WinToastTemplate::FirstLine);
 	templ.setTextField(text02, WinToastTemplate::SecondLine);
-	templ.setTextField(text03, WinToastTemplate::ThirdLine);
 	templ.setAudioOption(audioOption);
 	templ.setAttributionText(attribute);
 	templ.setImagePath(imagePath);

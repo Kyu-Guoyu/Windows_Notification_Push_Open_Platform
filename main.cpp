@@ -56,41 +56,44 @@ enum Results
 	ToastNotLaunched          //通知未能启推
 };
 #define COMMAND_ACTION     L"--action"
-#define COMMAND_AUMI       L"--aumi"
-#define COMMAND_APPNAME    L"--name"
+#define COMMAND_APPUSERMODELID       L"--aumi"
+#define COMMAND_APPDISPLAYNAME    L"--name"
 #define COMMAND_APPID      L"--id"
-#define COMMAND_EXPIREMS   L"--time"
+#define COMMAND_TIME   L"--time"
 #define COMMAND_TEXT01       L"--text01"
 #define COMMAND_TEXT02       L"--text02"
 #define COMMAND_TEXT03       L"--text03"
 #define COMMAND_HELP       L"--help"
-#define COMMAND_IMAGE      L"--image-path"
-#define COMMAND_SHORTCUT   L"--only-create-shortcut"
+#define COMMAND_IMAGE_PATH      L"--image-path"
+#define COMMAND_ONLY_CREATE_SHORTCUT   L"--ocs"
 #define COMMAND_AUDIO_STATE L"--audio-state"
 #define COMMAND_ATTRIBUTE  L"--attribute"
 void print_help() {
-	cout << endl;
-	cout << "Windows 操作中心通知开放平台" << endl;
-	cout << endl;
-	cout << "用法:" << endl;
-	cout << "\t" << "Windows_Notification_Push_Open_Platform.exe" << " [选项]" << endl;
-	cout << endl;
-	cout << "选项:" << endl;
-	cout << "\t" << "--action" <<" : 在按钮中设置操作" << endl;
-	cout << "\t" << "*--aumi" << " : 设置应用用户模型 ID" << endl;
-	cout << "\t" << "*--name" << " : 设置显示应用名称" << endl;
-	cout << "\t" << "*--id" << " : 设置应用ID" << endl;
-	cout << "\t" << "--time" << " : 设置过期时间" << endl;
-	cout << "\t" << "--text01" << " : 设置通知的第一行文本" << endl;
-	cout << "\t" << "--text02" << " : 设置通知的第二行文本" << endl;
-	cout << "\t" << "--text03" << " : 设置通知的第三行文本" << endl;
-	cout << "\t" << "--help" << " : 打印帮助说明" << endl;
-	cout << "\t" << "--image-path" << " : 设置图像路径" << endl;
-	cout << "\t" << "--only-create-shortcut" << " : 仅创建应用的快捷方式" << endl;
-	cout << "\t" << "--audio-state" << " : 设置通知音频的播放模式：单次 = 0，无 = 1，多次循环 = 2" << endl;
-	cout << "\t" << "--attribute" << " : 设置通知的注释" << endl;
-	cout << endl;
-	cout << "被“*”标记的选项为必要项，如果缺失，程序可能无法正确运行导致通知启推异常。" << endl;
+	wcout << endl;
+	wcout << endl;
+	wcout << "Windows 操作中心通知开放平台" << endl;
+	wcout << endl;
+	wcout << "用法:" << endl;
+	wcout << "\t" << "Windows_Notification_Push_Open_Platform.exe" << " [选项]" << endl;
+	wcout << endl;
+	wcout << "选项:" << endl;
+	wcout << "\t" << COMMAND_ACTION <<" ：在按钮中设置操作" << endl;
+	wcout << "\t" << COMMAND_APPUSERMODELID << " ：设置应用用户模型 ID*" << endl;
+	wcout << "\t" << COMMAND_APPDISPLAYNAME << " ：设置显示应用名称*" << endl;
+	wcout << "\t" << COMMAND_APPID << " ：设置应用ID*" << endl;
+	wcout << "\t" << COMMAND_TIME << " ：设置显示时间(仅在0≤时间≤7000时有效)" << endl;
+	wcout << "\t" << COMMAND_TEXT01 << " ：设置通知的第一行文本" << endl;
+	wcout << "\t" << COMMAND_TEXT02 << " ：设置通知的第二行文本" << endl;
+	wcout << "\t" << COMMAND_TEXT03 << " ：设置通知的第三行文本" << endl;
+	wcout << "\t" << COMMAND_HELP << " ：打印帮助说明" << endl;
+	wcout << "\t" << COMMAND_IMAGE_PATH << " ：设置图像路径" << endl;
+	//wcout << "\t" << COMMAND_ONLY_CREATE_SHORTCUT << " ：仅创建应用的快捷方式" << endl;
+	wcout << "\t" << COMMAND_AUDIO_STATE << " ：设置通知音频的播放模式：单次 = 0，无 = 1，多次循环 = 2" << endl;
+	wcout << "\t" << COMMAND_ATTRIBUTE << " ：设置通知的注释" << endl;
+	wcout << endl;
+	wcout << "注意事项：" << endl;
+	wcout << "\t" << "被“*”标记的选项为必要项，如果缺失，程序可能无法正确运行导致通知启推异常。" << endl;
+	wcout << endl;
 }
 int wmain(int argc, LPWSTR* argv) {
 	if (argc == 1) {
@@ -110,19 +113,19 @@ int wmain(int argc, LPWSTR* argv) {
 	WinToastTemplate::AudioOption audioOption = WinToastTemplate::AudioOption::Default;
 	int i;
 	for (i = 1; i < argc; i++) {
-		if (!wcscmp(COMMAND_IMAGE, argv[i])) {
+		if (!wcscmp(COMMAND_IMAGE_PATH, argv[i])) {
 			imagePath = argv[++i];
 		}
 		else if (!wcscmp(COMMAND_ACTION, argv[i])) {
 			actions.push_back(argv[++i]);
 		}
-		else if (!wcscmp(COMMAND_EXPIREMS, argv[i])) {
+		else if (!wcscmp(COMMAND_TIME, argv[i])) {
 			expiration = wcstol(argv[++i], NULL, 10);
 		}
-		else if (!wcscmp(COMMAND_APPNAME, argv[i])) {
+		else if (!wcscmp(COMMAND_APPDISPLAYNAME, argv[i])) {
 			appName = argv[++i];
 		}
-		else if (!wcscmp(COMMAND_AUMI, argv[i]) || !wcscmp(COMMAND_APPID, argv[i])) {
+		else if (!wcscmp(COMMAND_APPUSERMODELID, argv[i]) || !wcscmp(COMMAND_APPID, argv[i])) {
 			appUserModelID = argv[++i];
 		}
 		else if (!wcscmp(COMMAND_TEXT01, argv[i])) {
@@ -137,7 +140,7 @@ int wmain(int argc, LPWSTR* argv) {
 		else if (!wcscmp(COMMAND_ATTRIBUTE, argv[i])) {
 			attribute = argv[++i];
 		}
-		else if (!wcscmp(COMMAND_SHORTCUT, argv[i])) {
+		else if (!wcscmp(COMMAND_ONLY_CREATE_SHORTCUT, argv[i])) {
 			onlyCreateShortcut = true;
 		}
 		else if (!wcscmp(COMMAND_AUDIO_STATE, argv[i])) {

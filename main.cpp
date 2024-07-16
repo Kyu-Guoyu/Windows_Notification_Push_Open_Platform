@@ -9,12 +9,10 @@ public:
 		cout << "用户点击了通知" << endl;
 		exit(0);
 	}
-
 	void toastActivated(int actionIndex) const {
-		cout << "用户点击了 # 按钮/活动 " << actionIndex << endl;
+		cout << "用户点击了第" << (actionIndex+1.0) << "个按钮"  << endl;
 		exit(16 + actionIndex);
 	}
-
 	void toastDismissed(WinToastDismissalReason state) const {
 		switch (state) {
 		case UserCanceled:
@@ -35,7 +33,6 @@ public:
 			break;
 		}
 	}
-
 	void toastFailed() const {
 		cout << "未能显示当前通知" << endl;
 		exit(5);
@@ -55,7 +52,7 @@ enum Results
 	InitializationFailure,    //通知管理器初始化失败
 	ToastNotLaunched          //通知未能启推
 };
-#define COMMAND_ACTION     L"--action"
+#define COMMAND_BUTTON     L"--button"
 #define COMMAND_APPUSERMODELID       L"--aumi"
 #define COMMAND_APPDISPLAYNAME    L"--name"
 #define COMMAND_APPID      L"--id"
@@ -73,19 +70,19 @@ void print_help() {
 	wcout << "Windows 操作中心通知开放平台" << endl;
 	wcout << endl;
 	wcout << "用法:" << endl;
-	wcout << "\t" << "Windows_Notification_Push_Open_Platform.exe" << " [选项]" << endl;
+	wcout << "\t" << "Windows_Notification_Push_Open_Platform.exe" << " 【选项】" << endl;
 	wcout << endl;
 	wcout << "选项:" << endl;
-	wcout << "\t" << COMMAND_ACTION <<" ：在按钮中设置操作" << endl;
+	wcout << "\t" << COMMAND_BUTTON <<" ：设置通知中的按钮" << endl;
 	wcout << "\t" << COMMAND_APPUSERMODELID << " ：设置应用用户模型 ID*" << endl;
 	wcout << "\t" << COMMAND_APPDISPLAYNAME << " ：设置显示应用名称*" << endl;
 	wcout << "\t" << COMMAND_APPID << " ：设置应用ID*" << endl;
-	wcout << "\t" << COMMAND_TIME << " ：设置显示时间(仅在0≤时间≤7000时有效)" << endl;
+	wcout << "\t" << COMMAND_TIME << " ：设置显示时间（仅在0≤时间≤7000时有效）" << endl;
 	wcout << "\t" << COMMAND_TEXT01 << " ：设置通知的第一行文本" << endl;
 	wcout << "\t" << COMMAND_TEXT02 << " ：设置通知的第二行文本" << endl;
 	wcout << "\t" << COMMAND_HELP << " ：打印帮助说明" << endl;
 	wcout << "\t" << COMMAND_IMAGE_PATH << " ：设置图像路径" << endl;
-	//wcout << "\t" << COMMAND_ONLY_CREATE_SHORTCUT << " ：仅创建应用的快捷方式" << endl;
+	wcout << "\t" << COMMAND_ONLY_CREATE_SHORTCUT << " ：仅创建应用的快捷方式" << endl;
 	wcout << "\t" << COMMAND_AUDIO_STATE << " ：设置通知音频的播放模式：单次 = 0，无 = 1，多次循环 = 2" << endl;
 	wcout << "\t" << COMMAND_ATTRIBUTE << " ：设置通知的注释（也可当作第三行使用[Doge]）" << endl;
 	wcout << endl;
@@ -113,7 +110,7 @@ int wmain(int argc, LPWSTR* argv) {
 		if (!wcscmp(COMMAND_IMAGE_PATH, argv[i])) {
 			imagePath = argv[++i];
 		}
-		else if (!wcscmp(COMMAND_ACTION, argv[i])) {
+		else if (!wcscmp(COMMAND_BUTTON, argv[i])) {
 			actions.push_back(argv[++i]);
 		}
 		else if (!wcscmp(COMMAND_TIME, argv[i])) {
@@ -145,7 +142,8 @@ int wmain(int argc, LPWSTR* argv) {
 			return 0;
 		}
 		else {
-			wcerr << "未知的选项: " << argv[i] << endl;
+			wcerr << "未知的或错误选项" << endl;
+			wcerr << "语法错误 " << endl;
 			return Results::UnhandledOption;
 		}
 	}
@@ -153,7 +151,7 @@ int wmain(int argc, LPWSTR* argv) {
 	WinToast::instance()->setAppUserModelId(appUserModelID);
 	if (onlyCreateShortcut) {
 		if (!imagePath.empty() || !text01.empty() || !text02.empty() || actions.size() > 0 || expiration) {
-			cerr << "--only-create-shortcut 选项不接受图片/文本/动作参数或过期的参数" << endl;
+			cerr << "--ocs 选项不接受图片/文本/动作参数或过期的参数" << endl;
 			return 9;
 		}
 		enum WinToast::ShortcutResult result = WinToast::instance()->createShortcut();
@@ -180,5 +178,5 @@ int wmain(int argc, LPWSTR* argv) {
 		return Results::ToastFailed;
 	}
 	Sleep(expiration ? (DWORD)expiration + 1000 : 15000);
-	exit(2);
+	exit(21);
 }

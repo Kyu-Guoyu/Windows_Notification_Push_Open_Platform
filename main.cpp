@@ -10,8 +10,8 @@ public:
 		exit(0);
 	}
 	void toastActivated(int actionIndex) const {
-		cout << "用户点击了第" << (actionIndex+1) << "个按钮"  << endl;
-		exit((actionIndex + 1) + 21);
+		cout << "用户点击了第" << (actionIndex+1.0) << "个按钮"  << endl;
+		exit(16 + actionIndex);
 	}
 	void toastDismissed(WinToastDismissalReason state) const {
 		switch (state) {
@@ -52,18 +52,18 @@ enum Results
 	InitializationFailure,    //通知管理器初始化失败
 	ToastNotLaunched          //通知未能启推
 };
+#define COMMAND_BUTTON     L"--button"
 #define COMMAND_APPUSERMODELID       L"--aumi"
 #define COMMAND_APPDISPLAYNAME    L"--name"
 #define COMMAND_APPID      L"--id"
 #define COMMAND_TIME   L"--time"
 #define COMMAND_TEXT01       L"--text01"
 #define COMMAND_TEXT02       L"--text02"
-#define COMMAND_BUTTON     L"--button"
+#define COMMAND_HELP       L"--help"
 #define COMMAND_IMAGE_PATH      L"--image-path"
+#define COMMAND_ONLY_CREATE_SHORTCUT   L"--ocs"
 #define COMMAND_AUDIO_STATE L"--audio-state"
 #define COMMAND_ATTRIBUTE  L"--attribute"
-#define COMMAND_ONLY_CREATE_SHORTCUT   L"--ocs"
-#define COMMAND_HELP       L"--help"
 void print_help() {
 	wcout << endl;
 	wcout << endl;
@@ -73,26 +73,26 @@ void print_help() {
 	wcout << "\t" << "Windows_Notification_Push_Open_Platform.exe" << " 【选项】" << endl;
 	wcout << endl;
 	wcout << "选项:" << endl;
+	wcout << "\t" << COMMAND_BUTTON <<" ：设置通知中的按钮" << endl;
 	wcout << "\t" << COMMAND_APPUSERMODELID << " ：设置应用用户模型 ID*" << endl;
 	wcout << "\t" << COMMAND_APPDISPLAYNAME << " ：设置显示应用名称*" << endl;
 	wcout << "\t" << COMMAND_APPID << " ：设置应用ID*" << endl;
 	wcout << "\t" << COMMAND_TIME << " ：设置显示时间（仅在0≤时间≤7000时有效）" << endl;
 	wcout << "\t" << COMMAND_TEXT01 << " ：设置通知的第一行文本" << endl;
 	wcout << "\t" << COMMAND_TEXT02 << " ：设置通知的第二行文本" << endl;
-	wcout << "\t" << COMMAND_BUTTON << " ：设置通知中的按钮" << endl;
+	wcout << "\t" << COMMAND_HELP << " ：打印帮助说明" << endl;
 	wcout << "\t" << COMMAND_IMAGE_PATH << " ：设置图像路径" << endl;
+	wcout << "\t" << COMMAND_ONLY_CREATE_SHORTCUT << " ：仅创建应用的快捷方式" << endl;
 	wcout << "\t" << COMMAND_AUDIO_STATE << " ：设置通知音频的播放模式：单次 = 0，无 = 1，多次循环 = 2" << endl;
 	wcout << "\t" << COMMAND_ATTRIBUTE << " ：设置通知的注释（也可当作第三行使用[Doge]）" << endl;
-	wcout << "\t" << COMMAND_ONLY_CREATE_SHORTCUT << " ：仅创建应用的快捷方式" << endl;
-	wcout << "\t" << COMMAND_HELP << " ：打印帮助说明" << endl;
 	wcout << endl;
 	wcout << "注意事项：" << endl;
-	wcout << "\t" << "被“*”标记的选项为必要选项，如果缺失，程序可能无法正确运行导致通知启推异常。" << endl;
+	wcout << "\t" << "被“*”标记的选项为必要项，如果缺失，程序可能无法正确运行导致通知启推异常。" << endl;
 	wcout << endl;
 }
 int wmain(int argc, LPWSTR* argv) {
 	if (argc == 1) {
-		cout << "缺少必要选项" << endl;
+		print_help();
 		return 0;
 	}
 	wstring appName = L"";
@@ -101,7 +101,7 @@ int wmain(int argc, LPWSTR* argv) {
 	wstring text02 = L"";
 	wstring imagePath = L"";
 	wstring attribute = L"";
-	vector<wstring> buttons;
+	vector<wstring> actions;
 	INT64 expiration = 0;
 	bool onlyCreateShortcut = false;
 	WinToastTemplate::AudioOption audioOption = WinToastTemplate::AudioOption::Default;
@@ -111,7 +111,7 @@ int wmain(int argc, LPWSTR* argv) {
 			imagePath = argv[++i];
 		}
 		else if (!wcscmp(COMMAND_BUTTON, argv[i])) {
-			buttons.push_back(argv[++i]);
+			actions.push_back(argv[++i]);
 		}
 		else if (!wcscmp(COMMAND_TIME, argv[i])) {
 			expiration = wcstol(argv[++i], NULL, 10);
@@ -142,7 +142,7 @@ int wmain(int argc, LPWSTR* argv) {
 			return 0;
 		}
 		else {
-			wcerr << "未知或错误的选项" << endl;
+			wcerr << "未知的或错误选项" << endl;
 			wcerr << "语法错误 " << endl;
 			return Results::UnhandledOption;
 		}
@@ -150,7 +150,7 @@ int wmain(int argc, LPWSTR* argv) {
 	WinToast::instance()->setAppName(appName);
 	WinToast::instance()->setAppUserModelId(appUserModelID);
 	if (onlyCreateShortcut) {
-		if (!imagePath.empty() || !text01.empty() || !text02.empty() || buttons.size() > 0 || expiration) {
+		if (!imagePath.empty() || !text01.empty() || !text02.empty() || actions.size() > 0 || expiration) {
 			cerr << "--ocs 选项不接受图片/文本/动作参数或过期的参数" << endl;
 			return 9;
 		}
@@ -158,7 +158,7 @@ int wmain(int argc, LPWSTR* argv) {
 		return result ? 16 + result : 0;
 	}
 	if (!WinToast::instance()->initialize()) {
-		cerr << "缺少必要选项或您的系统不兼容或初始化错误！" << endl;
+		cerr << "错误，您的系统不兼容！（WinToast::instance()->initialize() 异常）" << endl;
 		return Results::InitializationFailure;
 	}
 	WinToastTemplate templ(!imagePath.empty() ? WinToastTemplate::ImageAndText02 : WinToastTemplate::Text02);
@@ -167,8 +167,8 @@ int wmain(int argc, LPWSTR* argv) {
 	templ.setAudioOption(audioOption);
 	templ.setAttributionText(attribute);
 	templ.setImagePath(imagePath);
-	for (auto const& buttons : buttons) {
-		templ.addAction(buttons);
+	for (auto const& action : actions) {
+		templ.addAction(action);
 	}
 	if (expiration) {
 		templ.setExpiration(expiration);
